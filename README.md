@@ -78,3 +78,67 @@ Claridad y organización del informe.
 Cobertura de todos los puntos solicitados en el QR y en esta guía.
 Calidad, claridad y correcto funcionamiento de los códigos implementados en C.
 Calidad de los análisis, comparaciones y aplicaciones presentadas.
+
+Guía para la exposición
+
+       1. Contenido
+
+La exposición deberá cubrir los contenidos desarrollados en el informe.
+Los integrantes deberán explicar los conceptos y algoritmos estudiados de manera clara.
+Se deberán ejecutar y explicar los códigos implementados en C, mostrando su funcionamiento y, cuando corresponda, los resultados obtenidos.
+
+
+
+
+      2. Orden de exposición
+
+El número de grupo se encuentra indicado en el código QR asignado.
+Las exposiciones se realizarán en orden: grupo 1, grupo 2, grupo 3, etc.
+
+
+
+
+      3. Presentación
+
+La exposición deberá realizarse utilizando una presentación en PowerPoint (PPT).
+No se establece un formato, tamaño o cantidad de diapositivas mínimos o máximos.
+La presentación deberá adaptarse al estilo y criterio del grupo.
+Evitar el exceso de texto y utilizar principalmente imágenes, diagramas, ejemplos y otros recursos visuales que faciliten la comprensión.
+
+
+
+
+      4. Uso de inteligencia artificial
+
+Se permite utilizar herramientas de IA generativa para elaborar la presentación.
+Sin embargo, el material generado deberá ser revisado, corregido y adaptado por el grupo.  No se debe utilizar diapositivas generadas íntegramente por IA sin modificaciones o sin adecuarlas al contenido y estilo de la exposición.
+Los errores presentes en la presentación serán responsabilidad del grupo.
+
+
+
+
+      5. Preguntas
+
+Al finalizar la exposición, los integrantes del grupo deberán responder preguntas realizadas tanto por el profesor como por los demás estudiantes.
+Todos los integrantes deberán ser capaces de explicar y defender el contenido del informe y el funcionamiento de los códigos.
+Las preguntas podrán estar relacionadas con: El contenido expuesto, el informe, los algoritmos estudiados, la complejidad de los algoritmos, los códigos desarrollados, las decisiones tomadas durante la implementación o las ventajas, desventajas y aplicaciones de los algoritmos.
+
+
+
+
+      6. Entrega del PPT 
+
+El PPT deberá ser entregado impreso el día de la exposición.
+La evaluación considerará principalmente:
+
+
+
+
+      7. Criterios de evaluacion
+
+Claridad y dominio del tema
+Capacidad para explicar los algoritmos y sus características.
+Claridad en la explicación y demostración de los códigos.
+Organización y calidad del material visual.
+Capacidad para mantener una exposición fluida y comprensible.
+Capacidad de responder correctamente las preguntas del profesor y de los estudiantes.
