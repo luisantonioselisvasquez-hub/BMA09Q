@@ -68,7 +68,7 @@ Si se evidencia un uso excesivo o poco trabajado de IA, por ejemplo, mediante te
 
 La calificación del informe será grupal.
 
-Se deberá entregar una copia impresa del informe durante la primera clase de la sexta semana.
+Se entregara una copia impresa del informe durante la primera clase de la sexta semana (fecha provicional).
 
 ### 9. Criterios de evaluación
 
