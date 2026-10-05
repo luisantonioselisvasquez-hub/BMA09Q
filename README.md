@@ -15,3 +15,5 @@
 - **Comparación de algoritmos:** Comparación entre la búsqueda ingenua, KMP y Rabin-Karp considerando sus estrategias y características.
 
 - **Selección del algoritmo:** Explicación de los criterios que permiten determinar qué algoritmo resulta más conveniente según las características del problema.
+  
+[(https://github.com/marcops-bit/BMA09Q/blob/Grupo-8/Informe%20Grupo%208%20BMA09Q.docx)]
