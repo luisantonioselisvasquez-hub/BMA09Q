@@ -1,0 +1,125 @@
+//PROBLEMA DEL SUDOKU:
+#include <stdio.h>
+#include <stdbool.h>
+
+#define N 9 // Dimensión del tablero (9x9)
+
+// Función auxiliar para imprimir el tablero de Sudoku con formato visual
+void imprimirTablero(int tablero[N][N]) {
+    for (int fila = 0; fila < N; fila++) {
+        if (fila % 3 == 0 && fila != 0) {
+            printf("---------------------\n"); // Separador horizontal de bloques 3x3
+        }
+        for (int col = 0; col < N; col++) {
+            if (col % 3 == 0 && col != 0) {
+                printf("| "); // Separador vertical de bloques 3x3
+            }
+            if (tablero[fila][col] == 0) {
+                printf(". "); // Imprime punto en casillas vacías
+            } else {
+                printf("%d ", tablero[fila][col]);
+            }
+        }
+        printf("\n");
+    }
+    printf("\n");
+}
+
+// Función de PODA / VALIDACIÓN: Verifica si es seguro colocar 'num' en (fila, col)
+bool esValido(int tablero[N][N], int fila, int col, int num) {
+    // 1. Revisar la fila actual
+    for (int x = 0; x < N; x++) {
+        if (tablero[fila][x] == num) {
+            return false;
+        }
+    }
+
+    // 2. Revisar la columna actual
+    for (int x = 0; x < N; x++) {
+        if (tablero[x][col] == num) {
+            return false;
+        }
+    }
+
+    // 3. Revisar la subcuadrícula de 3x3 correspondiente
+    int inicioFila = fila - fila % 3;
+    int inicioCol = col - col % 3;
+    for (int i = 0; i < 3; i++) {
+        for (int j = 0; j < 3; j++) {
+            if (tablero[i + inicioFila][j + inicioCol] == num) {
+                return false;
+            }
+        }
+    }
+
+    return true; // Cumple con todas las restricciones del Sudoku
+}
+
+// Algoritmo de Backtracking para Sudoku
+bool resolverSudoku(int tablero[N][N], int fila, int col) {
+    // CASO BASE: Si alcanzamos el final del tablero, hemos resuelto el Sudoku
+    if (fila == N - 1 && col == N) {
+        return true;
+    }
+
+    // Si llegamos al final de una fila, pasamos a la siguiente
+    if (col == N) {
+        fila++;
+        col = 0;
+    }
+
+    // Si la celda ya tiene un valor inicial, avanzamos a la siguiente
+    if (tablero[fila][col] > 0) {
+        return resolverSudoku(tablero, fila, col + 1);
+    }
+
+    // Probar colocar los candidatos del 1 al 9 en la celda vacía
+    for (int num = 1; num <= 9; num++) {
+        if (esValido(tablero, fila, col, num)) { // PODA
+            // 1. ELECCIÓN: Asignar temporalmente el número
+            tablero[fila][col] = num;
+
+            // 2. AVANCE RECURSIVO: Intentar resolver las casillas restantes
+            if (resolverSudoku(tablero, fila, col + 1)) {
+                return true;
+            }
+
+            // 3. DESHACER DECISIÓN (BACKTRACK): Vaciar la celda para probar otro candidato
+            tablero[fila][col] = 0;
+        }
+    }
+
+    return false; // Ningún número funcionó, desencadena la vuelta atrás
+}
+
+int main() {
+    // Tablero inicial de prueba (0 representa casilla vacía)
+    int tablero[N][N] = {
+        {5, 3, 0, 0, 7, 0, 0, 0, 0},
+        {6, 0, 0, 1, 9, 5, 0, 0, 0},
+        {0, 9, 8, 0, 0, 0, 0, 6, 0},
+        {8, 0, 0, 0, 6, 0, 0, 0, 3},
+        {4, 0, 0, 8, 0, 3, 0, 0, 1},
+        {7, 0, 0, 0, 2, 0, 0, 0, 6},
+        {0, 6, 0, 0, 0, 0, 2, 8, 0},
+        {0, 0, 0, 4, 1, 9, 0, 0, 5},
+        {0, 0, 0, 0, 8, 0, 0, 7, 9}
+    };
+
+    printf("===========================================\n");
+    printf("   ALGORITMO PARA RESOLUCION DE UN SUDOKU\n");
+    printf("===========================================\n\n");
+
+    printf("SUDOKU INICIAL:\n\n");
+    imprimirTablero(tablero);
+
+    if (resolverSudoku(tablero, 0, 0)) {
+        printf("SUDOKU RESUELTO CON EXITO:\n\n");
+        imprimirTablero(tablero);
+    } else {
+        printf("No existe solucion para el Sudoku proporcionado.\n");
+    }
+
+    return 0;
+}
+
