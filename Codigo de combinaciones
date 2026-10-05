@@ -1,0 +1,67 @@
+//PROBLEMA DE COMBINACIONES:
+#include <stdio.h>
+
+#define MAX 20 // Límite máximo para el tamaño del arreglo
+
+// Función auxiliar para imprimir una combinación
+void imprimir(int resultado[], int k) {
+    printf("[ ");
+    for (int i = 0; i < k; i++) {
+        printf("%d ", resultado[i]);
+    }
+    printf("]\n");
+}
+
+// Algoritmo de Backtracking para Combinaciones
+void generarCombinaciones(int inicio, int nivel, int n, int k, int resultado[], int *contador) {
+    // CASO BASE: Se seleccionó un subconjunto completo de tamaño K
+    if (nivel == k) {
+        (*contador)++;
+        printf("Combinacion %d: ", *contador);
+        imprimir(resultado, k);
+        return;
+    }
+
+    // Exploración de candidatos desde 'inicio' hasta 'n' (evita repeticiones)
+    for (int i = inicio; i <= n; i++) {
+        // 1. ELECCIÓN: Guardar el elemento actual
+        resultado[nivel] = i;
+
+        // 2. AVANCE RECURSIVO: Siguiente nivel, iniciando en (i + 1)
+        generarCombinaciones(i + 1, nivel + 1, n, k, resultado, contador);
+
+        // 3. DESHACER DECISIÓN (BACKTRACK): Se sobrescribe en la siguiente iteración
+    }
+}
+
+int main() {
+    int n, k;
+    int resultado[MAX];
+    int totalCombinaciones = 0;
+
+    printf("============================================\n");
+    printf("   ALGORITMO PARA OBTENER COMBINACIONES  \n");
+    printf("============================================\n\n");
+
+    // Lectura de parámetros desde el teclado
+    printf("Ingrese el valor de N (total de elementos, 1-15): ");
+    scanf("%d", &n);
+
+    printf("Ingrese el valor de K (tamaño del subconjunto, 1-%d): ", n);
+    scanf("%d", &k);
+
+    // Validación de entradas
+    if (n < 1 || k < 1 || k > n || n > MAX) {
+        printf("\nParametros invalidos. Asegurese de que 1 <= K <= N <= %d.\n", MAX);
+        return 1;
+    }
+
+    printf("\nGenerando combinaciones de %d elementos tomados de %d en %d:\n\n", n, k, k);
+
+    // Inicio de la búsqueda recursiva desde el elemento 1 y nivel 0
+    generarCombinaciones(1, 0, n, k, resultado, &totalCombinaciones);
+
+    printf("\nTotal de combinaciones generadas: %d\n", totalCombinaciones);
+
+    return 0;
+}
