@@ -3,3 +3,404 @@ Inserte aqui los nombres completo y codigos de los intregrantes del grupo
 1)Palpa Saavedra Marco Antonio
 2)Espichan Vilca Nicolas Miller
 3)Checollo Vila Alberth Felix
+
+## Algortimo de busqueda ingenua (Palpa Marco)
+#include <stdio.h>
+#include <string.h>
+void naive_string_matching_con_metricas(const char *texto, const char *patron) {
+    int n = strlen(texto);
+    int m = strlen(patron);
+    
+    int desplazamientos_validos[100];
+    int num_validos = 0;
+    int total_comparaciones = 0;
+    int total_mismatches = 0;
+
+    printf("Texto  (T): \"%s\" (n = %d)\n", texto, n);
+    printf("Patron (P): \"%s\" (m = %d)\n\n", patron, m);
+    printf("--- TRAZA PASO A PASO ---\n");
+    
+    // Recorrido de los desplazamientos s en el rango [0, n - m]
+    for (int s = 0; s <= n - m; s++) {
+        int j = 0;
+        int comparaciones_s = 0;
+        
+        while (j < m && texto[s + j] == patron[j]) {
+            j++;
+            comparaciones_s++;
+        }
+        
+        // Si el bucle se interrumpió antes de completar el patrón
+        if (j < m) {
+            comparaciones_s++; // Se suma la comparación que provocó el mismatch
+            total_mismatches++;
+            printf("Desplazamiento s = %2d: Mismatch en T[%d] ('%c') != P[%d] ('%c') tras %d comp.\n", 
+                   s, s + j, texto[s + j], j, patron[j], comparaciones_s);
+        } else {
+            desplazamientos_validos[num_validos++] = s;
+            printf("Desplazamiento s = %2d: COINCIDENCIA ENCONTRADA (%d comp.)\n", s, comparaciones_s);
+        }
+        
+        total_comparaciones += comparaciones_s;
+    }
+
+    printf("\nRESUMEN DE RESULTADOS\n");
+    printf("Desplazamientos validos encontrados (s): [");
+    for (int k = 0; k < num_validos; k++) {
+        printf("%d%s", desplazamientos_validos[k], (k < num_validos - 1) ? ", " : "");
+    }
+    printf("]\n");
+    printf("Total de comparaciones de caracteres: %d\n", total_comparaciones);
+    printf("Total de mismatches registrados: %d\n", total_mismatches);
+    printf("Promedio de comparaciones por desplazamiento: %.2f\n", (float)total_comparaciones / (n - m + 1));
+}
+
+int main() {
+    const char *texto_ejemplo = "AABAACAADAABAABA";
+    const char *patron_ejemplo = "AABA";
+
+    naive_string_matching_con_metricas(texto_ejemplo, patron_ejemplo);
+
+    return 0;
+}
+
+
+--------------------------------------------------------------------------------------------------------------------
+
+
+## Algoritmo KMP (Palpa Marco)
+#include <stdio.h>
+#include <string.h>
+
+void construir_lps(const char *patron, int m, int lps[]) {
+    int j=0;
+    lps[0] = 0;
+
+    for (int i = 1; i < m; i++) {
+
+        while (j > 0 && patron[i] != patron[j]) {
+            j = lps[j - 1];
+        }
+
+        if (patron[i] == patron[j]) {
+            j++;
+        }
+
+        lps[i] = j;
+    }
+}
+
+void kmp_string_matching(const char *texto, const char *patron) {
+    int n = strlen(texto);
+    int m = strlen(patron);
+
+    int lps[m];
+    int i = 0;
+    int j = 0;
+
+    int total_comparaciones = 0;
+    int total_mismatches = 0;
+
+    construir_lps(patron, m, lps);
+
+    printf("Texto  T: \"%s\" (n = %d)\n", texto, n);
+    printf("Patron P: \"%s\" (m = %d)\n\n", patron, m);
+
+    printf("Tabla LPS: [");
+    for (int k = 0; k < m; k++) {
+        printf("%d%s", lps[k], (k < m - 1) ? ", " : "");
+    }
+    printf("]\n\n");
+
+    printf("- RESULTADOS -\n");
+
+    while (i < n) {
+
+        total_comparaciones++;
+
+        if (texto[i] == patron[j]) {
+            i++;
+            j++;
+
+            if (j == m) {
+                printf("COINCIDENCIA ENCONTRADA Posicion inicial: %d\n",
+                       i - j);
+
+                j = lps[j - 1];
+            }
+
+        } else {
+            total_mismatches++;
+
+            if (j > 0) {
+                j = lps[j - 1];
+            } else {
+                i++;
+            }
+        }
+    }
+
+    printf("\n- RESUMEN DE RESULTADOS \n");
+    printf("Total de comparaciones de caracteres: %d\n",
+           total_comparaciones);
+    printf("Total de mismatches registrados: %d\n",
+           total_mismatches);
+}
+
+int main() {
+
+    const char *texto_ejemplo = "AABAACAADAABAABA";
+    const char *patron_ejemplo = "AABA";
+
+    kmp_string_matching(texto_ejemplo, patron_ejemplo);
+
+    return 0;
+}
+
+---------------------------------------------------------------------------------------------------------------------
+
+## Algoritmo Rabin Karp (Checollo Alberth)
+#include <stdio.h>
+#include <string.h>
+
+void rabin_karp_demostracion(const char *T, const char *P, int b, int q) {
+    int n = strlen(T), m = strlen(P);
+    long long hp = 1, hP = 0, hT = 0;
+    int i, s, j; // Declarada la variable 'j' aqui para C89
+
+    int total_evaluaciones_hash = 0;
+    int total_comparaciones_caracter = 0;
+    int colisiones = 0;
+
+    // 1. Precalcular hp = b^(m-1) mod q y hashes iniciales (s = 0)
+    for (i = 0; i < m - 1; i++) hp = (hp * b) % q;
+    for (i = 0; i < m; i++) {
+        hP = (hP * b + (unsigned char)P[i]) % q;
+        hT = (hT * b + (unsigned char)T[i]) % q;
+    }
+
+    // Encabezado de la demostracion
+    printf("=========================================================================================\n");
+    printf("                  DEMOSTRACION COMPLETA: ALGORITMO RABIN-KARP                            \n");
+    printf("=========================================================================================\n");
+    printf(" Texto (T)  : %s (n = %d) | Patron (P) : %s (m = %d)\n", T, n, P, m);
+    printf(" Base (b)   : %d | Modulo (q) : %d | Hash Objetivo h(P) : %lld\n", b, q, hP);
+    printf(" Constante hp = b^(m-1) mod q : %lld\n", hp);
+    printf("=========================================================================================\n");
+    printf("  s  | Ventana | Hash h(T) | Filtro Hash | Verificacion Caracteres | Estado / Resultado \n");
+    printf("-----+---------+-----------+-------------+-------------------------+---------------------\n");
+
+    for (s = 0; s <= n - m; s++) {
+        total_evaluaciones_hash++;
+
+        printf(" %2d  |  %.*s   |    %3lld    | ", s, m, T + s, hT);
+
+        // 2. Evaluacion mediante Rabin-Karp
+        if (hP == hT) {
+            printf(" COINCIDE   | ");
+            
+            // Verificaci n explicita caracter por caracter
+            int coincide_exacto = 1;
+            int comp_ventana = 0;
+
+            for (j = 0; j < m; j++) {
+                comp_ventana++;
+                if (T[s + j] != P[j]) {
+                    coincide_exacto = 0;
+                    break;
+                }
+            }
+            total_comparaciones_caracter += comp_ventana;
+
+            if (coincide_exacto) {
+                printf("%d comps. -> IGUALES   | [!] COINCIDENCIA EXACTA\n", comp_ventana);
+            } else {
+                colisiones++;
+                printf("%d comps. -> DISTINTOS| [?] FALSO POSITIVO\n", comp_ventana);
+            }
+        } else {
+            // El hash descarto la ventana en O(1) sin comparar letras
+            printf(" DIFERENTE  | 0 comparaciones (O(1))  | --- (Descartado)\n");
+        }
+
+        // 3. Actualizar el hash rodante para la siguiente ventana
+        if (s < n - m) {
+            unsigned char saliente = T[s];
+            unsigned char entrante = T[s + m];
+            hT = (b * (hT - saliente * hp) + entrante) % q;
+            if (hT < 0) hT = (hT + q) % q;
+        }
+    }
+
+    // Resumen de rendimiento para la exposicion
+    printf("=========================================================================================\n");
+    printf(" RESUMEN DE EJECUCION DE RABIN-KARP:\n");
+    printf(" -> Evaluaciones de Hash realizadas       : %d (1 por ventana usando Rolling Hash)\n", total_evaluaciones_hash);
+    printf(" -> Comparaciones reales de caracteres    : %d (solo en coincidencias de hash)\n", total_comparaciones_caracter);
+    printf(" -> Colisiones / Falsos Positivos         : %d\n", colisiones);
+    printf(" -> Comparaciones ahorradas vs Fuerza Bruta: %d comparaciones evitadas\n", (n - m + 1) * m - total_comparaciones_caracter);
+    printf("=========================================================================================\n");
+}
+
+int main() {
+    char T[] = "AABAACAADAABAABA";
+    char P[] = "AABA";
+
+    rabin_karp_demostracion(T, P, 256, 101);
+
+    return 0;
+}
+
+
+--------------------------------------------------------------------------------------------------------------------
+
+## Prefijo y sufijo (Checollo Alberth)
+#include <stdio.h>
+#include <string.h>
+
+void calcularTablaLPS(char* P, int m, int lps[]) {
+    int len = 0;
+    lps[0] = 0;
+    int i = 1;
+
+    while (i < m) {
+        if (P[i] == P[len]) {
+            len++;
+            lps[i] = len;
+            i++;
+        } else {
+            if (len != 0) {
+                len = lps[len - 1];
+            } else {
+                lps[i] = 0;
+                i++;
+            }
+        }
+    }
+}
+
+int main() {
+    char P[] = "ABABACA";
+    int m = strlen(P);
+    int lps[m];
+
+    calcularTablaLPS(P, m, lps);
+
+    printf("Patron (P) : %s (m = %d) | Alfabeto Base : {'A', 'B', 'C'}\n", P, m);
+    printf("========================================================================================\n");
+    printf("j  | Caracter P[j] | Subcadena P[0...j]  | Borde Mas Largo (LPS) | Longitud lps[j]\n");
+    printf("---+---------------+---------------------+-----------------------+-----------------\n");
+
+    char sub[20];
+    for (int j = 0; j < m; j++) {
+        // Copiar subcadena P[0...j]
+        strncpy(sub, P, j + 1);
+        sub[j + 1] = '\0';
+
+        // Determinar descripciones textuales del borde mas largo para la traza
+        char* borde_str = "NO EX";
+        if (lps[j] == 1) borde_str = "A";
+        else if (lps[j] == 2) borde_str = "AB";
+        else if (lps[j] == 3) borde_str = "ABA";
+
+        printf("%-2d | %-13c | %-19s | %-21s | %-15d\n", j, P[j], sub, borde_str, lps[j]);
+    }
+
+    printf("========================================================================================\n");
+    printf("RESUMEN DE CONSTRUCCION DE LA TABLA LPS:\n");
+    printf("-> Arreglo LPS resultante   : [");
+    for (int j = 0; j < m; j++) {
+        printf("%d%s", lps[j], (j == m - 1) ? "" : ", ");
+    }
+    printf("]\n");
+    printf("-> Operaciones de analisis  : Acotadas estrictamente a O(m) mediante amortizacion de bordes.\n");
+
+    return 0;
+}
+
+
+-----------------------------------------------------------------------------------------------------------------------
+
+## Funcion Hash (Checollo Alberth)
+#include <stdio.h>
+#include <string.h>
+
+void comparacion_tabla_completa(const char *T, const char *P, int b, int q) {
+    int n = strlen(T), m = strlen(P);
+    long long hp = 1, hP = 0, hT_movil = 0;
+    int i, s;
+
+    int total_pasos_tradicional = 0;
+    int total_pasos_rodante = 0;
+
+    // 1. Precalcular hp = b^(m-1) mod q y hash del patron
+    for (i = 0; i < m - 1; i++) hp = (hp * b) % q;
+    for (i = 0; i < m; i++) {
+        hP = (hP * b + (unsigned char)P[i]) % q;
+        hT_movil = (hT_movil * b + (unsigned char)T[i]) % q;
+    }
+
+    // Encabezado principal de la demostración
+    printf("=========================================================================================\n");
+    printf("              DEMOSTRACION COMPARATIVA: HASH TRADICIONAL VS HASH RODANTE                \n");
+    printf("=========================================================================================\n");
+    printf(" Texto (T)  : %s (n = %d) | Patron (P) : %s (m = %d)\n", T, n, P, m);
+    printf(" Base (b)   : %d | Modulo (q) : %d | Hash Patron h(P) : %lld\n", b, q, hP);
+    printf("=========================================================================================\n");
+    printf("  s  | Ventana | Hash | Estado / Resultado                | Pasos Trad. | Pasos Rodante  \n");
+    printf("-----+---------+------+-----------------------------------+-------------+----------------\n");
+
+    for (s = 0; s <= n - m; s++) {
+        // --- HASH TRADICIONAL ---
+        // Vuelve a recorrer los m caracteres en CADA iteracion
+        long long hT_trad = 0;
+        int pasos_trad = 0;
+        for (i = 0; i < m; i++) {
+            hT_trad = (hT_trad * b + (unsigned char)T[s + i]) % q;
+            pasos_trad++;
+        }
+        total_pasos_tradicional += pasos_trad;
+
+        // --- HASH RODANTE ---
+        int pasos_rodante = (s == 0) ? m : 1; // Solo s=0 lee m caracteres, luego es O(1)
+        total_pasos_rodante += pasos_rodante;
+
+        // Impresion de la fila completa
+        printf(" %2d  |  %.*s   |  %2lld  | ", s, m, T + s, hT_movil);
+
+        if (hP == hT_movil) {
+            if (strncmp(T + s, P, m) == 0) {
+                printf("[!] COINCIDENCIA EXACTA ENCONTRADA  | ");
+            } else {
+                printf("[?] Colision de Hash (Falso Pos.)  | ");
+            }
+        } else {
+            printf("--- (No coincide)                   | ");
+        }
+
+        printf("  %d letras   |   %d operacion\n", pasos_trad, pasos_rodante);
+
+        // Actualizar el hash rodante para la siguiente ventana
+        if (s < n - m) {
+            unsigned char saliente = T[s];
+            unsigned char entrante = T[s + m];
+            hT_movil = (b * (hT_movil - saliente * hp) + entrante) % q;
+            if (hT_movil < 0) hT_movil = (hT_movil + q) % q;
+        }
+    }
+
+    printf("=========================================================================================\n");
+    printf(" RESUMEN TOTAL DE OPERACIONES MATEMATICAS:\n");
+    printf(" -> Hash Tradicional (Recalculo completo) : %d pasos acumulados (O(n * m))\n", total_pasos_tradicional);
+    printf(" -> Hash Rodante     (Rolling Hash O(1))  : %d pasos acumulados (O(n + m))\n", total_pasos_rodante);
+    printf("=========================================================================================\n");
+}
+
+int main() {
+    char T[] = "AABAACAADAABAABA";
+    char P[] = "AABA";
+
+    comparacion_tabla_completa(T, P, 256, 101);
+
+    return 0;
+}
