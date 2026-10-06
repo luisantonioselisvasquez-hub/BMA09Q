@@ -1,0 +1,77 @@
+//PROBLEMA DE PERMUTACIONES:
+#include <stdio.h>
+#include <stdbool.h>
+
+#define MAX 20 // Límite máximo para el tamaño de los arreglos
+
+// Función auxiliar para imprimir cada permutación
+void imprimir(int arreglo[], int n) {
+    printf("[ ");
+    for (int i = 0; i < n; i++) {
+        printf("%d ", arreglo[i]);
+    }
+    printf("]\n");
+}
+
+// Algoritmo de Backtracking para Permutaciones
+void generarPermutaciones(int nivel, int n, int resultado[], bool usado[], int *contador) {
+    // CASO BASE: Se ha completado una permutación de tamaño N
+    if (nivel == n) {
+        (*contador)++;
+        printf("Solucion %d: ", *contador);
+        imprimir(resultado, n);
+        return;
+    }
+
+    // Exploración de candidatos del 1 al N
+    for (int candidato = 1; candidato <= n; candidato++) {
+        // PODA / VALIDACIÓN: Se procesa solo si el número no ha sido usado
+        if (!usado[candidato]) {
+            // 1. ELECCIÓN
+            usado[candidato] = true;
+            resultado[nivel] = candidato;
+
+            // 2. AVANCE RECURSIVO
+            generarPermutaciones(nivel + 1, n, resultado, usado, contador);
+
+            // 3. DESHACER DECISIÓN (BACKTRACK)
+            usado[candidato] = false;
+        }
+    }
+}
+
+int main() {
+    int n;
+
+    printf("==================================\n");
+    printf("   ALGORITMO DE PERMUTACIONES\n");
+    printf("==================================\n\n");
+
+    // Ingreso del valor de N por teclado
+    printf("Ingrese el valor de N : ");
+    scanf("%d", &n);
+
+    // Validación de entrada
+    if (n < 1 || n > 10) {
+        printf("\nPor favor ingrese un numero valido entre 1 y 10.\n");
+        return 1;
+    }
+
+    int resultado[MAX];
+    bool usado[MAX + 1];
+    int totalSoluciones = 0;
+
+    // Inicializar el arreglo de control de uso
+    for (int i = 0; i <= n; i++) {
+        usado[i] = false;
+    }
+
+    printf("\nGenerando permutaciones para N = %d:\n\n", n);
+
+    // Inicio de la búsqueda recursiva desde el nivel 0
+    generarPermutaciones(0, n, resultado, usado, &totalSoluciones);
+
+    printf("\nTotal de permutaciones generadas para N = %d: %d\n", n, totalSoluciones);
+
+    return 0;
+}
