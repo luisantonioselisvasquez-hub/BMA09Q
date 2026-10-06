@@ -1,0 +1,114 @@
+
+1. Distancia directa o con 1 escala (Grafo pequeño)
+Calcula el camino más corto entre dos nodos probando solo dos opciones: ir directo o pasar por un nodo intermedio.
+#include <stdio.h>
+
+int main() {
+    // Pesos de las aristas (distancias)
+    int directo = 15;      // Distancia A -> C
+    int tramo1 = 4;        // Distancia A -> B
+    int tramo2 = 6;        // Distancia B -> C
+
+    int con_escala = tramo1 + tramo2;
+
+    printf("Camino directo (A -> C): %d\n", directo);
+    printf("Camino por escala (A -> B -> C): %d\n", con_escala);
+
+    if (directo < con_escala) {
+        printf("El camino mas corto es DIRECTO con costo: %d\n", directo);
+    } else {
+        printf("El camino mas corto es CON ESCALA con costo: %d\n", con_escala);
+    }
+
+    return 0;
+}
+
+2. Algoritmo BFS para camino mínimo en grafo sin pesos
+En grafos donde todas las aristas valen 1 (mismo peso), la distancia mínima a cada nodo se obtiene simplemente usando una Búsqueda en Anchura (BFS).
+#include <stdio.h>
+
+#define V 4
+
+void caminoMinimoBFS(int grafo[V][V], int origen) {
+    int distancia[V];
+    int cola[V];
+    int frente = 0, fin = 0;
+
+    // Inicializar distancias en -1 (no visitado)
+    for (int i = 0; i < V; i++) {
+        distancia[i] = -1;
+    }
+
+    // Nodo origen
+    distancia[origen] = 0;
+    cola[fin++] = origen;
+
+    while (frente < fin) {
+        int actual = cola[frente++];
+
+        for (int i = 0; i < V; i++) {
+            // Si hay conexión y no ha sido visitado
+            if (grafo[actual][i] == 1 && distancia[i] == -1) {
+                distancia[i] = distancia[actual] + 1;
+                cola[fin++] = i;
+            }
+        }
+    }
+
+    printf("Distancias minimas en pasos (aristas) desde el nodo %d:\n", origen);
+    for (int i = 0; i < V; i++) {
+        printf("Hacia nodo %d: %d pasos\n", i, distancia[i]);
+    }
+}
+
+int main() {
+    // Matriz de adyacencia (1 si hay conexion, 0 si no)
+    int grafo[V][V] = {
+        {0, 1, 1, 0},
+        {1, 0, 0, 1},
+        {1, 0, 0, 1},
+        {0, 1, 1, 0}
+    };
+
+    caminoMinimoBFS(grafo, 0);
+
+    return 0;
+}
+
+3. Matriz de distancias directas y búsqueda del vecino más cercano
+Encuentra la distancia más corta desde un nodo específico hacia sus vecinos directos recorriendo una simple fila de la matriz de adyacencia.
+#include <stdio.h>
+
+#define V 4
+#define INF 9999
+
+int main() {
+    // Matriz con las distancias directas entre nodos (INF = no hay conexion)
+    int matriz[V][V] = {
+        {0,   12,  INF, 5},
+        {12,  0,   8,   INF},
+        {INF, 8,   0,   3},
+        {5,   INF, 3,   0}
+    };
+
+    int origen = 0;
+    int menor_distancia = INF;
+    int vecino_mas_cercano = -1;
+
+    // Buscar la menor distancia directa desde 'origen'
+    for (int j = 0; j < V; j++) {
+        if (j != origen && matriz[origen][j] < menor_distancia) {
+            menor_distancia = matriz[origen][j];
+            vecino_mas_cercano = j;
+        }
+    }
+
+    if (vecino_mas_cercano != -1) {
+        printf("Desde el nodo %d, el vecino directo mas cercano es el nodo %d (Distancia: %d)\n", 
+               origen, vecino_mas_cercano, menor_distancia);
+    } else {
+        printf("El nodo no tiene vecinos accesibles.\n");
+    }
+
+    return 0;
+}
