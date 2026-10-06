@@ -1,0 +1,43 @@
+#include <stdio.h>
+ 
+/* Pide el costo de un tramo */
+int leer_costo(const char *tramo) {
+    int c;
+    printf("Costo del tramo %s: ", tramo);
+    scanf("%d", &c);
+    return c;
+}
+ 
+int main(void) {
+    /* Costos de los tramos (los elige el usuario) */
+    int AB = leer_costo("A-B");
+    int BE = leer_costo("B-E");
+    int AC = leer_costo("A-C");
+    int CE = leer_costo("C-E");
+    int EL = leer_costo("E-L");
+ 
+    /* Los dos tramos posibles de A a E */
+    int por_B = AB + BE;
+    int por_C = AC + CE;
+    int mejor_AE = (por_B <= por_C) ? por_B : por_C;
+    int peor_AE  = (por_B <= por_C) ? por_C : por_B;
+ 
+    printf("\nTramo A -> E por B: %d\n", por_B);
+    printf("Tramo A -> E por C: %d\n", por_C);
+    printf("Mejor tramo A -> E: %d\n\n", mejor_AE);
+ 
+    /* Ruta optima de A a L (siempre pasa por E) */
+    printf("Ruta optima de A a L: A -> %s -> E -> L\n",
+           (por_B <= por_C) ? "B" : "C");
+    printf("Costo minimo: %d\n\n", mejor_AE + EL);
+ 
+    /* Comprobacion: con el tramo mas caro no mejora */
+    printf("Con el tramo mas caro el total seria: %d", peor_AE + EL);
+    if (peor_AE == mejor_AE) printf(" (empate)");
+    else printf(" (peor)");
+    printf("\n");
+ 
+    return 0;
+}
+
+
