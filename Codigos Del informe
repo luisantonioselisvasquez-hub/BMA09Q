@@ -1,0 +1,984 @@
+Matriz de Adyacencia---------------------------------------------
+#include <stdio.h>
+#include <stdlib.h>
+#include <stdbool.h>
+
+//Grafo con Matriz de Adyacencia
+typedef struct {
+    int numVertices;
+    int** matriz;
+    bool esDirigido;
+} GrafoMatriz;
+
+// Crear e inicializar el grafo con Matriz de Adyacencia
+GrafoMatriz* crearGrafoMatriz(int vertices, bool esDirigido) {
+    GrafoMatriz* grafo = (GrafoMatriz*)malloc(sizeof(GrafoMatriz));
+    grafo->numVertices = vertices;
+    grafo->esDirigido = esDirigido;
+
+    // Asignación dinámica de memoria para las filas
+    grafo->matriz = (int**)malloc(vertices * sizeof(int*));
+    for (int i = 0; i < vertices; i++) {
+        // Asignación de memoria para las columnas e inicialización en 0
+        grafo->matriz[i] = (int*)calloc(vertices, sizeof(int));
+    }
+    return grafo;
+}
+
+// Agregar una arista al grafo
+void agregarAristaMatriz(GrafoMatriz* grafo, int origen, int destino, int peso) {
+    if (origen >= 0 && origen < grafo->numVertices && destino >= 0 && destino < grafo->numVertices) {
+        grafo->matriz[origen][destino] = peso;
+        if (!grafo->esDirigido) {
+            grafo->matriz[destino][origen] = peso; // Simetría para no dirigidos
+        }
+    }
+}
+
+// Imprimir la matriz de adyacencia
+void imprimirMatriz(GrafoMatriz* grafo) {
+    printf("\n--- MATRIZ DE ADYACENCIA ---\n  ");
+    for (int i = 0; i < grafo->numVertices; i++) printf("%d ", i);
+    printf("\n");
+
+    for (int i = 0; i < grafo->numVertices; i++) {
+        printf("%d ", i);
+        for (int j = 0; j < grafo->numVertices; j++) {
+            printf("%d ", grafo->matriz[i][j]);
+        }
+        printf("\n");
+    }
+}
+
+// Liberar la memoria dinámica asignada
+void liberarGrafoMatriz(GrafoMatriz* grafo) {
+    for (int i = 0; i < grafo->numVertices; i++) {
+        free(grafo->matriz[i]);
+    }
+    free(grafo->matriz);
+    free(grafo);
+}
+
+int main() {
+    int vertices, tipo, opcion;
+    int origen, destino, peso;
+    bool esDirigido;
+
+    printf("=== CREADOR DE GRAFO INTERACTIVO ===\n");
+    printf("Ingrese la cantidad de v%crtices del grafo: ", 130);
+    scanf("%d", &vertices);
+do
+{
+    printf("Seleccione el tipo de grafo (1: Dirigido, 0: No Dirigido): ");
+    scanf("%d", &tipo);
+    if (tipo != 0 && tipo != 1)
+	{
+        printf("Error, solo puede elegir los d%cgitos 0 o 1. Intente nuevamente.\n", 161);
+    }
+}
+while (tipo != 0 && tipo != 1);
+
+    GrafoMatriz* miGrafo = crearGrafoMatriz(vertices, esDirigido);
+
+    do {
+        printf("\n--- MEN%c DE OPCIONES ---", 233);
+        printf("\n1. Agregar una arista o conexi%cn", 162);
+        printf("\n2. Mostrar Matriz de Adyacencia");
+        printf("\n3. Salir");
+        printf("\nSeleccione una opci%cn: ", 162);
+        scanf("%d", &opcion);
+
+        switch (opcion) {
+            case 1:
+                printf("\n--- Agregar Arista ---\n");
+                printf("V%crtice origen (0 a %d): ", 130,  vertices - 1);
+                scanf("%d", &origen);
+                printf("V%crtice destino (0 a %d): ", 130,  vertices - 1);
+                scanf("%d", &destino);
+                printf("Ingrese el peso de la arista: ");
+                scanf("%d", &peso);
+
+                // Validación simple de límites
+                if (origen >= 0 && origen < vertices && destino >= 0 && destino < vertices) {
+                    agregarAristaMatriz(miGrafo, origen, destino, peso);
+                    printf("¡Arista agregada correctamente!\n");
+                } else {
+                    printf("Error: Los v%crtices ingresados están fuera del rango válido.\n", 130);
+                }
+                break;
+
+            case 2:
+                imprimirMatriz(miGrafo);
+                break;
+
+            case 3:
+                printf("\nCerrando el programa...\n");
+                liberarGrafoMatriz(miGrafo);
+                break;
+
+            default:
+                printf("Opci%cn inv%clida. Intente de nuevo.\n", 162, 160);
+        }
+    } while (opcion != 3);
+
+    return 0;
+}
+Lista de Adyacencia---------------------------------------------
+#include <stdio.h>
+#include <stdlib.h>
+#include <stdbool.h>
+
+// Nodo en la lista de adyacencia
+typedef struct NodoLista {
+    int destino;
+    int peso;
+    struct NodoLista* siguiente;
+} NodoLista;
+
+// Grafo con Lista de Adyacencia
+typedef struct {
+    int numVertices;
+    bool esDirigido;
+    NodoLista** listas; // Array de punteros a nodos (las cabeceras de cada lista)
+} GrafoLista;
+
+// Crear e inicializar el grafo con Lista de Adyacencia
+GrafoLista* crearGrafoLista(int vertices, bool esDirigido) {
+    GrafoLista* grafo = (GrafoLista*)malloc(sizeof(GrafoLista));
+    grafo->numVertices = vertices;
+    grafo->esDirigido = esDirigido;
+
+    // Asignación dinámica de memoria para el arreglo de listas (cabeceras)
+    grafo->listas = (NodoLista**)malloc(vertices * sizeof(NodoLista*));
+    for (int i = 0; i < vertices; i++) {
+        // Inicializamos cada lista como vacía (puntero NULL)
+        grafo->listas[i] = NULL;
+    }
+    return grafo;
+}
+
+// Función auxiliar para crear un nuevo nodo de la lista
+NodoLista* crearNodo(int destino, int peso) {
+    NodoLista* nuevoNodo = (NodoLista*)malloc(sizeof(NodoLista));
+    nuevoNodo->destino = destino;
+    nuevoNodo->peso = peso;
+    nuevoNodo->siguiente = NULL;
+    return nuevoNodo;
+}
+
+// Agregar una arista al grafo
+void agregarAristaLista(GrafoLista* grafo, int origen, int destino, int peso) {
+    if (origen >= 0 && origen < grafo->numVertices && destino >= 0 && destino < grafo->numVertices) {
+        // Insertamos el nodo al principio de la lista del vértice 'origen'
+        NodoLista* nuevo = crearNodo(destino, peso);
+        nuevo->siguiente = grafo->listas[origen];
+        grafo->listas[origen] = nuevo;
+
+        // Simetría para grafos no dirigidos
+        if (!grafo->esDirigido) {
+            NodoLista* nuevoSimetrico = crearNodo(origen, peso);
+            nuevoSimetrico->siguiente = grafo->listas[destino];
+            grafo->listas[destino] = nuevoSimetrico;
+        }
+    }
+}
+
+void imprimirLista(GrafoLista* grafo) {
+    printf("\n--- LISTA DE ADYACENCIA ---\n");
+    for (int i = 0; i < grafo->numVertices; i++) {
+        NodoLista* actual = grafo->listas[i];
+        
+        // Imprime el vértice base como un bloque limpio
+        printf("| %d |", i); 
+        
+        // Recorre los nodos agregando la flecha ANTES de cada caja
+        while (actual != NULL) {
+            printf(" -> [ %d, Peso: %d ]", actual->destino, actual->peso);
+            actual = actual->siguiente;
+        }
+        
+        printf("\n"); 
+    }
+}
+
+// Liberar la memoria dinámica asignada de manera anidada
+void liberarGrafoLista(GrafoLista* grafo) {
+    for (int i = 0; i < grafo->numVertices; i++) {
+        NodoLista* actual = grafo->listas[i];
+        while (actual != NULL) {
+            NodoLista* temporal = actual;
+            actual = actual->siguiente;
+            free(temporal); // Liberamos cada nodo de la lista enlazada
+        }
+    }
+    free(grafo->listas); // Liberamos el arreglo de punteros
+    free(grafo);         // Liberamos la estructura del grafo
+}
+
+int main() {
+    int vertices, tipo, opcion;
+    int origen, destino, peso;
+    bool esDirigido;
+
+    printf("=== CREADOR DE GRAFO INTERACTIVO (LISTAS) ===\n");
+    printf("Ingrese la cantidad de v%crtices del grafo: ", 130);
+    scanf("%d", &vertices);
+
+    do {
+        printf("Seleccione el tipo de grafo (1: Dirigido, 0: No Dirigido): ");
+        scanf("%d", &tipo);
+        
+        if (tipo == 1) {
+            esDirigido = true; 
+        } else if (tipo == 0) {
+            esDirigido = false; 
+        } else {
+            printf("Error, solo puede elegir los d%cgitos 0 o 1. Intente nuevamente.\n", 161);
+        }
+    } while (tipo != 0 && tipo != 1);
+
+    GrafoLista* miGrafo = crearGrafoLista(vertices, esDirigido);
+
+    do {
+        printf("\n--- MEN%c DE OPCIONES ---", 233);
+        printf("\n1. Agregar una arista o conexi%cn", 162);
+        printf("\n2. Mostrar Lista de Adyacencia");
+        printf("\n3. Salir");
+        printf("\nSeleccione una opci%cn: ", 162);
+        scanf("%d", &opcion);
+
+        switch (opcion) {
+            case 1:
+                printf("\n--- Agregar Arista ---\n");
+                printf("V%crtice origen (0 a %d): ", 130, vertices - 1);
+                scanf("%d", &origen);
+                printf("V%crtice destino (0 a %d): ", 130, vertices - 1);
+                scanf("%d", &destino);
+                printf("Ingrese el peso de la arista: ");
+                scanf("%d", &peso);
+
+                // Validación de límites antes de insertar el nodo
+                if (origen >= 0 && origen < vertices && destino >= 0 && destino < vertices) {
+                    agregarAristaLista(miGrafo, origen, destino, peso);
+                    printf("%cArista agregada correctamente!\n", 173); // 173 es '¡'
+                } else {
+                    printf("Error: Los v%crtices ingresados est%cn fuera del rango v%clido.\n", 130, 160, 160);
+                }
+                break;
+
+            case 2:
+                imprimirLista(miGrafo);
+                break;
+
+            case 3:
+                printf("\nLiberando memoria din%cmica y cerrando el programa...\n", 160);
+                liberarGrafoLista(miGrafo);
+                break;
+
+            default:
+                printf("Opci%cn inv%clida. Intente de nuevo.\n", 162, 160);
+        }
+    } while (opcion != 3);
+
+    return 0;
+}
+Algoritmo BFS----------------------------------------------------------------
+#include <stdio.h>
+#include <stdlib.h>
+#include <stdbool.h>
+
+typedef struct NodoLista {
+    int destino;
+    int peso;
+    struct NodoLista* siguiente;
+} NodoLista;
+
+typedef struct {
+    int numVertices;
+    bool esDirigido;
+    NodoLista** listas; 
+} GrafoLista;
+
+// Cola FIFO
+typedef struct NodoCola {
+    int dato;
+    struct NodoCola* siguiente;
+} NodoCola;
+
+typedef struct {
+    NodoCola* frente;
+    NodoCola* final;
+} Cola;
+
+Cola* crearCola() {
+    Cola* q = (Cola*)malloc(sizeof(Cola));
+    q->frente = q->final = NULL;
+    return q;
+}
+
+bool colaVacia(Cola* q) {
+    return q->frente == NULL;
+}
+
+void encolar(Cola* q, int valor) {
+    NodoCola* nuevo = (NodoCola*)malloc(sizeof(NodoCola));
+    nuevo->dato = valor;
+    nuevo->siguiente = NULL;
+    if (q->final == NULL) {
+        q->frente = q->final = nuevo;
+        return;
+    }
+    q->final->siguiente = nuevo;
+    q->final = nuevo;
+}
+
+int desencolar(Cola* q) {
+    if (colaVacia(q)) return -1;
+    NodoCola* temporal = q->frente;
+    int valor = temporal->dato;
+    q->frente = q->frente->siguiente;
+    if (q->frente == NULL) {
+        q->final = NULL;
+    }
+    free(temporal);
+    return valor;
+}
+
+void liberarCola(Cola* q) {
+    while (!colaVacia(q)) {
+        desencolar(q);
+    }
+    free(q);
+}
+
+GrafoLista* crearGrafoLista(int vertices, bool esDirigido) {
+    GrafoLista* grafo = (GrafoLista*)malloc(sizeof(GrafoLista));
+    grafo->numVertices = vertices;
+    grafo->esDirigido = esDirigido;
+    grafo->listas = (NodoLista**)malloc(vertices * sizeof(NodoLista*));
+    for (int i = 0; i < vertices; i++) {
+        grafo->listas[i] = NULL;
+    }
+    return grafo;
+}
+
+NodoLista* crearNodo(int destino, int peso) {
+    NodoLista* nuevoNodo = (NodoLista*)malloc(sizeof(NodoLista));
+    nuevoNodo->destino = destino;
+    nuevoNodo->peso = peso;
+    nuevoNodo->siguiente = NULL;
+    return nuevoNodo;
+}
+
+void agregarAristaLista(GrafoLista* grafo, int origen, int destino, int peso) {
+    if (origen >= 0 && origen < grafo->numVertices && destino >= 0 && destino < grafo->numVertices) {
+        NodoLista* nuevo = crearNodo(destino, peso);
+        nuevo->siguiente = grafo->listas[origen];
+        grafo->listas[origen] = nuevo;
+
+        if (!grafo->esDirigido) {
+            NodoLista* nuevoSimetrico = crearNodo(origen, peso);
+            nuevoSimetrico->siguiente = grafo->listas[destino];
+            grafo->listas[destino] = nuevoSimetrico;
+        }
+    }
+}
+
+void imprimirLista(GrafoLista* grafo) {
+    printf("\n--- LISTA DE ADYACENCIA ---\n");
+    for (int i = 0; i < grafo->numVertices; i++) {
+        NodoLista* actual = grafo->listas[i];
+        printf("| %d |", i); 
+        while (actual != NULL) {
+            printf(" -> [ %d, Peso: %d ]", actual->destino, actual->peso);
+            actual = actual->siguiente;
+        }
+        printf("\n"); 
+    }
+}
+
+void liberarGrafoLista(GrafoLista* grafo) {
+    for (int i = 0; i < grafo->numVertices; i++) {
+        NodoLista* actual = grafo->listas[i];
+        while (actual != NULL) {
+            NodoLista* temporal = actual;
+            actual = actual->siguiente;
+            free(temporal);
+        }
+    }
+    free(grafo->listas);
+    free(grafo);
+}
+
+// BFS
+void BFS(GrafoLista* g, int inicio) {
+    bool* visitado = (bool*)calloc(g->numVertices, sizeof(bool));
+    Cola* q = crearCola();
+
+    printf("\nRecorrido BFS desde v%crtice %d: ", 130, inicio);
+
+    // Marcar origen e insertar en la cola
+    visitado[inicio] = true;
+    encolar(q, inicio);
+
+    while (!colaVacia(q)) {
+        int u = desencolar(q);
+        printf("%d ", u); 
+
+        NodoLista* actual = g->listas[u];
+        while (actual != NULL) {
+            int v = actual->destino;
+            if (!visitado[v]) {
+                visitado[v] = true;
+                encolar(q, v);
+            }
+            actual = actual->siguiente;
+        }
+    }
+    printf("\n");
+
+    liberarCola(q);
+    free(visitado);
+}
+
+
+int main() {
+    int vertices, tipo, opcion, nodoInicio;
+    int origen, destino, peso;
+    bool esDirigido;
+
+    printf("=== CREADOR DE GRAFO INTERACTIVO (CON BFS) ===\n");
+    printf("Ingrese la cantidad de v%crtices del grafo: ", 130);
+    scanf("%d", &vertices);
+
+    do {
+        printf("Seleccione el tipo de grafo (1: Dirigido, 0: No Dirigido): ");
+        scanf("%d", &tipo);
+        
+        if (tipo == 1) {
+            esDirigido = true; 
+        } else if (tipo == 0) {
+            esDirigido = false; 
+        } else {
+            printf("Error, solo puede elegir los d%cgitos 0 o 1. Intente nuevamente.\n", 161);
+        }
+    } while (tipo != 0 && tipo != 1);
+
+    GrafoLista* miGrafo = crearGrafoLista(vertices, esDirigido);
+
+    do {
+        printf("\n--- MEN%c DE OPCIONES ---", 233);
+        printf("\n1. Agregar una arista o conexi%cn", 162);
+        printf("\n2. Mostrar Lista de Adyacencia");
+        printf("\n3. Ejecutar Recorrido BFS (Anchura)");
+        printf("\n4. Salir");
+        printf("\nSeleccione una opci%cn: ", 162);
+        scanf("%d", &opcion);
+
+        switch (opcion) {
+            case 1:
+                printf("\n--- Agregar Arista ---\n");
+                printf("V%crtice origen (0 a %d): ", 130, vertices - 1);
+                scanf("%d", &origen);
+                printf("V%crtice destino (0 a %d): ", 130, vertices - 1);
+                scanf("%d", &destino);
+                printf("Ingrese el peso de la arista: ");
+                scanf("%d", &peso);
+
+                if (origen >= 0 && origen < vertices && destino >= 0 && destino < vertices) {
+                    agregarAristaLista(miGrafo, origen, destino, peso);
+                    printf("%cArista agregada correctamente!\n", 173);
+                } else {
+                    printf("Error: Los v%crtices ingresados est%cn fuera del rango v%clido.\n", 130, 160, 160);
+                }
+                break;
+
+            case 2:
+                imprimirLista(miGrafo);
+                break;
+
+            case 3:
+                printf("\nIngrese el v%crtice de origen para iniciar BFS (0 a %d): ", 130, vertices - 1);
+                scanf("%d", &nodoInicio);
+                if (nodoInicio >= 0 && nodoInicio < vertices) {
+                    BFS(miGrafo, nodoInicio);
+                } else {
+                    printf("Error: V%crtice fuera de rango.\n", 130);
+                }
+                break;
+
+            case 4:
+                printf("\nLiberando memoria din%cmica y cerrando el programa...\n", 160);
+                liberarGrafoLista(miGrafo);
+                break;
+
+            default:
+                printf("Opci%cn inv%clida. Intente de nuevo.\n", 162, 160);
+        }
+    } while (opcion != 4);
+
+    return 0;
+}
+Algoritmo DFS------------------------------------
+#include <stdio.h>
+#include <stdlib.h>
+#include <stdbool.h>
+
+typedef struct NodoLista {
+    int destino;
+    int peso;
+    struct NodoLista* siguiente;
+} NodoLista;
+
+typedef struct {
+    int numVertices;
+    bool esDirigido;
+    NodoLista** listas; 
+} GrafoLista;
+
+GrafoLista* crearGrafoLista(int vertices, bool esDirigido) {
+    GrafoLista* grafo = (GrafoLista*)malloc(sizeof(GrafoLista));
+    grafo->numVertices = vertices;
+    grafo->esDirigido = esDirigido;
+    grafo->listas = (NodoLista**)malloc(vertices * sizeof(NodoLista*));
+    for (int i = 0; i < vertices; i++) {
+        grafo->listas[i] = NULL;
+    }
+    return grafo;
+}
+
+NodoLista* crearNodo(int destino, int peso) {
+    NodoLista* nuevoNodo = (NodoLista*)malloc(sizeof(NodoLista));
+    nuevoNodo->destino = destino;
+    nuevoNodo->peso = peso;
+    nuevoNodo->siguiente = NULL;
+    return nuevoNodo;
+}
+
+void agregarAristaLista(GrafoLista* grafo, int origen, int destino, int peso) {
+    if (origen >= 0 && origen < grafo->numVertices && destino >= 0 && destino < grafo->numVertices) {
+        NodoLista* nuevo = crearNodo(destino, peso);
+        nuevo->siguiente = grafo->listas[origen];
+        grafo->listas[origen] = nuevo;
+
+        if (!grafo->esDirigido) {
+            NodoLista* nuevoSimetrico = crearNodo(origen, peso);
+            nuevoSimetrico->siguiente = grafo->listas[destino];
+            grafo->listas[destino] = nuevoSimetrico;
+        }
+    }
+}
+
+void imprimirLista(GrafoLista* grafo) {
+    printf("\n--- LISTA DE ADYACENCIA ---\n");
+    for (int i = 0; i < grafo->numVertices; i++) {
+        NodoLista* actual = grafo->listas[i];
+        printf("| %d |", i); 
+        while (actual != NULL) {
+            printf(" -> [ %d, Peso: %d ]", actual->destino, actual->peso);
+            actual = actual->siguiente;
+        }
+        printf("\n"); 
+    }
+}
+
+void liberarGrafoLista(GrafoLista* grafo) {
+    for (int i = 0; i < grafo->numVertices; i++) {
+        NodoLista* actual = grafo->listas[i];
+        while (actual != NULL) {
+            NodoLista* temporal = actual;
+            actual = actual->siguiente;
+            free(temporal);
+        }
+    }
+    free(grafo->listas);
+    free(grafo);
+}
+
+// DFS
+void DFS_Recursivo(GrafoLista* g, int v, bool visitado[]) {
+    // 1. Marcar el nodo actual como visitado e imprimirlo
+    visitado[v] = true;
+    printf("%d ", v);
+
+    // 2. Para cada nodo vecino adyacente a v:
+    NodoLista* actual = g->listas[v];
+    while (actual != NULL) {
+        int vecino = actual->destino;
+
+        // Si visitado[vecino] es FALSO, invocar recursivamente DFS(vecino)
+        if (!visitado[vecino]) {
+            DFS_Recursivo(g, vecino, visitado); 
+        }
+        actual = actual->siguiente;
+    }
+    // 3. Al finalizar la iteración, retorna automáticamente al nivel anterior (Backtracking)
+}
+
+void DFS(GrafoLista* g, int inicio) {
+    // Reserva dinámica del arreglo auxiliar de estados
+    bool* visitado = (bool*)calloc(g->numVertices, sizeof(bool));
+    
+    printf("\nRecorrido DFS desde v%crtice %d: ", 130, inicio);
+    
+    // Invocar la función recursiva
+    DFS_Recursivo(g, inicio, visitado);
+    
+    printf("\n");
+    free(visitado); // Liberar memoria del arreglo
+}
+
+int main() {
+    int vertices, tipo, opcion, nodoInicio;
+    int origen, destino, peso;
+    bool esDirigido;
+
+    printf("=== CREADOR DE GRAFO INTERACTIVO (CON DFS) ===\n");
+    printf("Ingrese la cantidad de v%crtices del grafo: ", 130);
+    scanf("%d", &vertices);
+
+    do {
+        printf("Seleccione el tipo de grafo (1: Dirigido, 0: No Dirigido): ");
+        scanf("%d", &tipo);
+        
+        if (tipo == 1) {
+            esDirigido = true; 
+        } else if (tipo == 0) {
+            esDirigido = false; 
+        } else {
+            printf("Error, solo puede elegir los d%cgitos 0 o 1. Intente nuevamente.\n", 161);
+        }
+    } while (tipo != 0 && tipo != 1);
+
+    GrafoLista* miGrafo = crearGrafoLista(vertices, esDirigido);
+
+    do {
+        printf("\n--- MEN%c DE OPCIONES ---", 233);
+        printf("\n1. Agregar una arista o conexi%cn", 162);
+        printf("\n2. Mostrar Lista de Adyacencia");
+        printf("\n3. Ejecutar Recorrido DFS (Profundidad)");
+        printf("\n4. Salir");
+        printf("\nSeleccione una opci%cn: ", 162);
+        scanf("%d", &opcion);
+
+        switch (opcion) {
+            case 1:
+                printf("\n--- Agregar Arista ---\n");
+                printf("V%crtice origen (0 a %d): ", 130, vertices - 1);
+                scanf("%d", &origen);
+                printf("V%crtice destino (0 a %d): ", 130, vertices - 1);
+                scanf("%d", &destino);
+                printf("Ingrese el peso de la arista: ");
+                scanf("%d", &peso);
+
+                if (origen >= 0 && origen < vertices && destino >= 0 && destino < vertices) {
+                    agregarAristaLista(miGrafo, origen, destino, peso);
+                    printf("%cArista agregada correctamente!\n", 173);
+                } else {
+                    printf("Error: Los v%crtices ingresados est%cn fuera del rango v%clido.\n", 130, 160, 160);
+                }
+                break;
+
+            case 2:
+                imprimirLista(miGrafo);
+                break;
+
+            case 3:
+                printf("\nIngrese el v%crtice de origen para iniciar DFS (0 a %d): ", 130, vertices - 1);
+                scanf("%d", &nodoInicio);
+                if (nodoInicio >= 0 && nodoInicio < vertices) {
+                    DFS(miGrafo, nodoInicio);
+                } else {
+                    printf("Error: V%crtice fuera de rango.\n", 130);
+                }
+                break;
+
+            case 4:
+                printf("\nLiberando memoria din%cmica y cerrando el programa...\n", 160);
+                liberarGrafoLista(miGrafo);
+                break;
+
+            default:
+                printf("Opci%cn inv%clida. Intente de nuevo.\n", 162, 160);
+        }
+    } while (opcion != 4);
+
+    return 0;
+}
+Detección de ciclos con DFS---------------------------------------------------
+#include <stdio.h>
+#include <stdlib.h>
+
+#define BLANCO 0
+#define GRIS   1
+#define NEGRO  2
+
+typedef struct NodoLista {
+    int destino;
+    struct NodoLista *sig;
+} NodoLista;
+
+typedef struct {
+    int V;
+    NodoLista **A;
+} GrafoLista;
+
+GrafoLista *crearGrafo(int V) {
+    GrafoLista *g = (GrafoLista *)malloc(sizeof(GrafoLista));
+    if (!g) return NULL;
+    g->V = V;
+    g->A = (NodoLista**)calloc(V, sizeof(NodoLista *));
+    if (!g->A) { free(g); return NULL; }
+    return g;
+}
+
+int agregarAristaDirigida(GrafoLista *g, int u, int v) {
+    NodoLista *nuevo = (NodoLista *)malloc(sizeof(NodoLista));
+    if (!nuevo) return 0;
+    nuevo->destino = v;
+    nuevo->sig = g->A[u];
+    g->A[u] = nuevo;
+    return 1;
+}
+
+void liberarGrafo(GrafoLista *g) {
+    for (int i = 0; i < g->V; i++) {
+        NodoLista *p = g->A[i];
+        while (p) { NodoLista *t = p; p = p->sig; free(t); }
+    }
+    free(g->A);
+    free(g);
+}
+
+/* DFS con coloreo: devuelve 1 si encuentra una arista hacia atrás (ciclo) */
+int dfsCiclo(const GrafoLista *g, int u, int estado[]) {
+    estado[u] = GRIS;                          /* u está en la pila de llamadas */
+    for (NodoLista *p = g->A[u]; p != NULL; p = p->sig) {
+        int v = p->destino;
+        if (estado[v] == GRIS) return 1;       /* back edge => ciclo */
+        if (estado[v] == BLANCO && dfsCiclo(g, v, estado)) return 1;
+    }
+    estado[u] = NEGRO;                         /* u completamente procesado */
+    return 0;
+}
+
+int tieneCicloDFS(const GrafoLista *g) {
+    int *estado = (int *)calloc(g->V, sizeof(int));
+    if (!estado) return -1;
+    int ciclo = 0;
+    for (int i = 0; i < g->V && !ciclo; i++)
+        if (estado[i] == BLANCO)
+            ciclo = dfsCiclo(g, i, estado);
+    free(estado);
+    return ciclo;
+}
+
+int main(void) {
+    /* Caso DAG: 0->1, 0->2, 1->3, 2->3, 3->4 */
+    GrafoLista *dag = crearGrafo(5);
+    agregarAristaDirigida(dag, 0, 1);
+    agregarAristaDirigida(dag, 0, 2);
+    agregarAristaDirigida(dag, 1, 3);
+    agregarAristaDirigida(dag, 2, 3);
+    agregarAristaDirigida(dag, 3, 4);
+    printf("DAG:      %s\n", tieneCicloDFS(dag) ? "CICLO detectado" : "Sin ciclos");
+
+    /* Caso cíclico: 0->1, 1->2, 2->0, 2->3 */
+    GrafoLista *cic = crearGrafo(4);
+    agregarAristaDirigida(cic, 0, 1);
+    agregarAristaDirigida(cic, 1, 2);
+    agregarAristaDirigida(cic, 2, 0);
+    agregarAristaDirigida(cic, 2, 3);
+    printf("Ciclico:  %s\n", tieneCicloDFS(cic) ? "CICLO detectado" : "Sin ciclos");
+
+    liberarGrafo(dag);
+    liberarGrafo(cic);
+    return 0;
+}
+Prueba 1: Recorrido BFS y DFS en Grafo No Dirigido---------------------------------------
+#include <stdio.h>
+#include <stdlib.h>
+
+#define N 5
+
+typedef struct Nodo {
+    int v;
+    struct Nodo *sig;
+} Nodo;
+
+Nodo *adj[N];
+int visitado[N];
+int iter_aristas = 0;   /* cuenta las iteraciones del bucle de aristas */
+
+/* Inserta v al final de la lista de u (conserva el orden de inserción) */
+void agregar_dirigida(int u, int v) {
+    Nodo *nuevo = (Nodo*)malloc(sizeof(Nodo)); // Se añade el cast explícito (Nodo*) para Dev-C++
+    nuevo->v = v;
+    nuevo->sig = NULL;
+    if (adj[u] == NULL) {
+        adj[u] = nuevo;
+    } else {
+        Nodo *p = adj[u];
+        while (p->sig) p = p->sig;
+        p->sig = nuevo;
+    }
+}
+
+void agregar_arista(int u, int v) {   /* grafo no dirigido */
+    agregar_dirigida(u, v);
+    agregar_dirigida(v, u);
+}
+
+void bfs(int origen) {
+    int cola[N], ini = 0, fin = 0;
+    visitado[origen] = 1;
+    cola[fin++] = origen;
+
+    while (ini < fin) {
+        int u = cola[ini++];
+        printf("%d ", u);
+        for (Nodo *p = adj[u]; p != NULL; p = p->sig) {   // bucle de aristas
+            iter_aristas++;
+            if (!visitado[p->v]) {
+                visitado[p->v] = 1;
+                cola[fin++] = p->v;
+            }
+        }
+    }
+}
+
+void dfs(int u) {
+    visitado[u] = 1;
+    printf("%d ", u);
+    for (Nodo *p = adj[u]; p != NULL; p = p->sig) {       // bucle de aristas
+        iter_aristas++;
+        if (!visitado[p->v])
+            dfs(p->v);
+    }
+}
+
+void reiniciar(void) {
+    for (int i = 0; i < N; i++) visitado[i] = 0;
+    iter_aristas = 0;
+}
+
+int main(void) {
+    agregar_arista(0, 1);
+    agregar_arista(0, 2);
+    agregar_arista(1, 3);
+    agregar_arista(2, 4);
+
+    reiniciar();
+    printf("BFS desde 0: ");
+    bfs(0);
+    printf("\nIteraciones del bucle de aristas: %d (2|E| = 8)\n\n", iter_aristas);
+
+    reiniciar();
+    printf("DFS desde 0: ");
+    dfs(0);
+    printf("\nIteraciones del bucle de aristas: %d (2|E| = 8)\n", iter_aristas);
+
+    return 0;
+}
+Prueba 2: Detección de Ciclos---------------------------------------------
+#include <stdio.h>
+#include <stdlib.h>
+ 
+typedef struct Nodo {
+    int dest;
+    struct Nodo *sig;
+} Nodo;
+ 
+typedef struct {
+    int V, E;
+    Nodo **ady;
+} Grafo;
+ 
+Grafo *crearGrafo(int V) {
+    Grafo *g = (Grafo *)malloc(sizeof(Grafo));
+    g->V = V;
+    g->E = 0;
+    g->ady = (Nodo **)calloc(V, sizeof(Nodo *));
+    return g;
+}
+ 
+void agregarArista(Grafo *g, int u, int v) {      // dirigida u -> v
+    Nodo *n = (Nodo *)malloc(sizeof(Nodo));
+    n->dest = v;
+    n->sig = NULL;
+    if (!g->ady[u]) g->ady[u] = n;
+    else {
+        Nodo *p = g->ady[u];
+        while (p->sig) p = p->sig;
+        p->sig = n;
+    }
+    g->E++;
+}
+ 
+void liberar(Grafo *g) {
+    for (int i = 0; i < g->V; i++) {
+        Nodo *p = g->ady[i];
+        while (p) { Nodo *t = p; p = p->sig; free(t); }
+    }
+    free(g->ady);
+    free(g);
+}
+ 
+/* Devuelve 1 si encuentra back edge; guarda la arista en (*bu, *bv) */
+static int dfsCiclo(Grafo *g, int u, int *color, int *bu, int *bv) {
+    color[u] = 1;                                   /* gris */
+    for (Nodo *p = g->ady[u]; p; p = p->sig) {
+        int v = p->dest;
+        if (color[v] == 1) {                        /* back edge */
+            *bu = u;
+            *bv = v;
+            return 1;
+        }
+        if (color[v] == 0 && dfsCiclo(g, v, color, bu, bv))
+            return 1;
+    }
+    color[u] = 2;                                   /* negro */
+    return 0;
+}
+ 
+void probarCiclo(Grafo *g, const char *titulo, const char *aristas) {
+    int *color = (int *)calloc(g->V, sizeof(int));
+    int bu = -1, bv = -1, hay = 0;
+ 
+    printf("%s\n", titulo);
+    printf("Aristas: E = %s\n", aristas);
+ 
+    for (int u = 0; u < g->V && !hay; u++)
+        if (color[u] == 0) hay = dfsCiclo(g, u, color, &bu, &bv);
+ 
+    if (hay) {
+        printf("Back edge encontrada: (%d,%d)\n", bu, bv);
+        printf("¡ALERTA! Ciclo detectado mediante arista hacia atras (Back Edge).\n");
+    } else {
+        printf("El grafo NO contiene ciclos.\n");
+    }
+    printf("\n");
+    free(color);
+}
+ 
+int main(void) {
+    printf("=== Prueba 2: Deteccion de Ciclos ===\n\n");
+ 
+    /* Caso A: DAG */
+    Grafo *a = crearGrafo(3);
+    agregarArista(a, 0, 1);
+    agregarArista(a, 1, 2);
+    agregarArista(a, 0, 2);
+    probarCiclo(a, "Caso A (Grafo Aciclico - DAG)", "{(0,1), (1,2), (0,2)}");
+    liberar(a);
+ 
+    /* Caso B: cíclico */
+    Grafo *b = crearGrafo(3);
+    agregarArista(b, 0, 1);
+    agregarArista(b, 1, 2);
+    agregarArista(b, 2, 0);
+    probarCiclo(b, "Caso B (Grafo Ciclico)", "{(0,1), (1,2), (2,0)}");
+    liberar(b);
+ 
+    return 0;
+}
