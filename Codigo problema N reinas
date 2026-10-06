@@ -1,0 +1,90 @@
+//PROBLEMA DE LAS N REINAS:
+#include <stdio.h>
+#include <stdbool.h>
+#include <stdlib.h>
+
+#define TAM 8 // Tamaño fijo del tablero clásico de ajedrez (8x8)
+
+// Función auxiliar para imprimir el tablero completo de 8x8
+void imprimirTablero(int tablero[], int n, int numSolucion) {
+    printf("--- Solucion %d ---\n", numSolucion);
+    for (int i = 0; i < TAM; i++) {
+        for (int j = 0; j < TAM; j++) {
+            // Si la fila i tiene colocada una reina y está en la columna j
+            if (i < n && tablero[i] == j) {
+                printf(" Q "); // Muestra la Reina
+            } else {
+                printf(" . "); // Casilla vacía
+            }
+        }
+        printf("\n");
+    }
+    printf("\n");
+}
+
+// Función de PODA / VALIDACIÓN: Verifica si es seguro colocar una reina en (fila, col)
+bool esValido(int tablero[], int fila, int col) {
+    for (int i = 0; i < fila; i++) {
+        // 1. Misma columna
+        if (tablero[i] == col) {
+            return false;
+        }
+        // 2. Misma diagonal
+        if (abs(tablero[i] - col) == abs(i - fila)) {
+            return false;
+        }
+    }
+    return true;
+}
+
+// Algoritmo de Backtracking para colocar N reinas en tablero de 8x8
+void resolverNReinas(int fila, int n, int tablero[], int *contador) {
+    // CASO BASE: Se han colocado las N reinas
+    if (fila == n) {
+        (*contador)++;
+        imprimirTablero(tablero, n, *contador);
+        return;
+    }
+
+    // Probar colocar la reina actual en cada una de las 8 columnas de la fila
+    for (int col = 0; col < TAM; col++) {
+        if (esValido(tablero, fila, col)) { // PODA
+            // 1. ELECCIÓN
+            tablero[fila] = col;
+
+            // 2. AVANCE RECURSIVO (siguiente fila)
+            resolverNReinas(fila + 1, n, tablero, contador);
+
+            // 3. DESHACER DECISIÓN (se sobrescribe en el siguiente ciclo)
+        }
+    }
+}
+
+int main() {
+    int n;
+    int tablero[TAM];
+    int totalSoluciones = 0;
+
+    printf("==================================================\n");
+    printf(" PROBLEMA DE N-REINAS EN TABLERO DE AJEDREZ (8x8)  \n");
+    printf("==================================================\n\n");
+
+    // El usuario solo ingresa el número de reinas a colocar
+    printf("Ingrese el numero de reinas a colocar (1 a 8): ");
+    scanf("%d", &n);
+
+    // Validación de entrada
+    if (n < 1 || n > TAM) {
+        printf("\nEl numero de reinas debe estar entre 1 y %d.\n", TAM);
+        return 1;
+    }
+
+    printf("\nBuscando formas de colocar %d reina(s) en el tablero de ajedrez 8x8...\n\n", n);
+
+    // Inicio del backtracking desde la fila 0
+    resolverNReinas(0, n, tablero, &totalSoluciones);
+
+    printf("Total de soluciones encontradas para %d reina(s) en tablero 8x8: %d\n", n, totalSoluciones);
+
+    return 0;
+}
